@@ -1,4 +1,5 @@
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,6 +22,32 @@ public class Main {
         String postgres = "jdbc:postgresql://"+ url + "/" + db ;
         try{
             Connection conn = DriverManager.getConnection(postgres,props);
+            
+            //Creao a táboa que conterá os directorios
+            String sqlDirectorio = new String(
+                "CREATE TABLE IF NOT EXISTS Directorio ("
+                        + "idDirectorio integer primary key not null, "
+                        + "nomeDirectorio text"
+                        + ");");
+
+            CallableStatement createFunction = conn.prepareCall(sqlDirectorio);
+            createFunction.execute();
+            createFunction.close();
+            
+            //Creo a táboa que conterá os arquivos
+            String sqlArquivo = new String(
+                "CREATE TABLE IF NOT EXISTS Arquivo ("
+                        + "idArquivo integer primary key not null,"
+                        + " nomeArquivo text, "
+                        + "idDirectorio integer, "
+                        + "FOREIGN KEY (idDirectorio) REFERENCES Directorio (idDirectorio)"
+                        + ");");
+
+            createFunction = conn.prepareCall(sqlArquivo);
+            createFunction.execute();
+            createFunction.close();
+            
+            
             
         }catch (SQLException ex){
             System.err.println("Error: " + ex.toString());
