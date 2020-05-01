@@ -56,28 +56,77 @@ public class Main {
             createFunction.execute();
             createFunction.close();
        
-        
+       
+         //Busco os directorios
         String ruta = new String ("D:\\minidrive");
         File file = new File (ruta);
-        System.out.println(file.getPath());
-        if(file.exists()){
+        FileInputStream fis = new FileInputStream(file);
+            
+        String sqlInsertDirectorio = new String (
+                "INSERT INTO Directorio VALUES (?,?)");
+        PreparedStatement psd = conn.prepareStatement(sqlInsertDirectorio);
+        
+        String sqlInsertArquivo = new String (
+                "INSERT INTO Arquivo VALUES (?,?,?)");
+        PreparedStatement psa = conn.prepareStatement(sqlInsertArquivo);
+        
+        int id = 1;
+        if (file.exists()){
+            String [] lectura = file.list();
+            if (file.isDirectory()){
+            for (int i = 0; i < lectura.length; i++){
+                psd.setInt(1, id);
+                id++;
+                psd.setString(2,lectura[i]);
+                psd.executeUpdate();
+                }   
+            }
+        }
+        psd.close();
+        fis.close();
+        
+        /*String ruta = new String ("D:\\minidrive");
+        File file = new File (ruta);
+        if(file.exists()){//Si el fichero existe
             String[] fileRead = file.list();
             if(file.isDirectory()){
             for (int i=0; i< fileRead.length; i++){
-                System.out.println(fileRead[i]);
-                File f = new File (file.getAbsolutePath(),fileRead[i]);
+                psd.setInt(1,1);//Asigno en el idDirectorio el valor 1
+                //id++;//Sumo un valor para que en la siguiente iteracion coloque el 2
+                psd.setString(2,fileRead[i]);//Asigno el nombre del directorio en la base de datos
+                createFunction = conn.prepareCall(sqlInsertDirectorio);
+                createFunction.execute();
+                //createFunction.close();
+                /*File f = new File (file.getAbsolutePath(),fileRead[i]);
                 String [] subDirectorio = f.list();
                 if (f.isDirectory()){
                     for (int j = 0; j < subDirectorio.length; j++ ){
                         System.out.println(subDirectorio[i]);
+                        int ida = 1;
+                        psa.setInt(1,ida);
+                        ida++;
+                        psa.setString(2,subDirectorio[j]);
+                        psa.setInt(3,id);
+                        createFunction = conn.prepareCall(sqlInsertArquivo);
+                        createFunction.execute();
+                        createFunction.close();
                     }
                 }
             }
             }
         }
+        createFunction.close();
+        psd.executeUpdate();
+        psa.executeUpdate();
+        psd.close();
+        psa.close();*/
             
-    } catch (SQLException e){
-            e.printStackTrace();
-        }
+            } catch (SQLException e){
+                e.printStackTrace();
+            } catch (FileNotFoundException fnfe){
+                fnfe.printStackTrace();
+            } catch (IOException ioe){
+                ioe.getMessage();
+            }
     }
 }
