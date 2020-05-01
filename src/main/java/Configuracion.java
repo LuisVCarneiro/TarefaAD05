@@ -28,14 +28,6 @@ public class Configuracion {
         return "Configuracion{" + "db=" + dbConnection + ", app=" + app + '}';
     }
     
-    public void verValores(){
-        System.out.println(dbConnection.address);
-        System.out.println(dbConnection.user);
-        System.out.println(dbConnection.password);
-        System.out.println(dbConnection.name);
-    }
-    
-    
     public Configuracion leerJson(){
         
         try{

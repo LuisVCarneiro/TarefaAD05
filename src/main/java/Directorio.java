@@ -1,7 +1,4 @@
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
 
 
 public class Directorio{
@@ -15,5 +12,25 @@ public class Directorio{
         this.idDirectorio = idDirectorio;
         this.nomeDirectorio = nomeDirectorio;
     }
+
+    public int getIdDirectorio() {
+        return idDirectorio;
+    }
+
+    public void setIdDirectorio(int idDirectorio) {
+        this.idDirectorio = idDirectorio;
+    }
+
+    public String getNomeDirectorio() {
+        return nomeDirectorio;
+    }
+
+    public void setNomeDirectorio(String nomeDirectorio) {
+        this.nomeDirectorio = nomeDirectorio;
+    }
+    
+    App app = new App();
+        
+    
     
 }
