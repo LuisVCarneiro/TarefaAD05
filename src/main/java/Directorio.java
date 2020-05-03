@@ -6,11 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 
-
-
 public class Directorio{
     int idDirectorio;
     String nomeDirectorio;
+    
+   
+    
     
     public Directorio(){
     }
@@ -66,6 +67,29 @@ public class Directorio{
         psd.close();
         }catch (SQLException e){
             e.printStackTrace();
+        }
+    }
+    
+    public void insertarDirectorio(File carpetaRaiz, Connection conn ){
+        String raiz = carpetaRaiz.getPath();
+        String ruta = carpetaRaiz.getAbsolutePath();
+        ruta = "." + ruta.substring(raiz.length(),ruta.length());
+        try{
+             String sqlInsert = new String(
+                        "INSERT INTO Directorio VALUES (?,?);");
+                PreparedStatement ps = conn.prepareStatement(sqlInsert);
+                int id = 1;
+                ps.setInt(1,id);
+                id++;
+                ps.setString(2,ruta);
+                ps.executeUpdate();
+
+                System.out.println("directorio insertado -> " + ruta);
+
+                ps.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            System.out.println("Erro ó insertar o directorio");
         }
     }
             

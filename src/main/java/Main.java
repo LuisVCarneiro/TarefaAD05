@@ -1,4 +1,5 @@
 
+import java.io.File;
 import java.sql.Connection;
 
 
@@ -18,6 +19,12 @@ public class Main {
         Arquivo a = new Arquivo();
         a.createTableArquivo(con);
         
+        File carpetaRaiz = new File (conn.app.directory);
+        System.out.println("A carpeta raíz é: " + carpetaRaiz);
         
+        if (!carpetaRaiz.exists()) {
+                carpetaRaiz.mkdir();
+            }
+        d.insertarDirectorio(carpetaRaiz, con);
     }
 }
