@@ -31,7 +31,8 @@ public class dbConnection{
 
     @Override
     public String toString() {
-        return "DbConnection{" + "address=" + address + ", name=" + name + ", user=" + user + ", password=" + password + '}';
+        return "dbConnection{" + "address=" + address + ", name=" + name + ", user=" + user + ", password=" + password + '}';
     }
-
+    
+    
 }
