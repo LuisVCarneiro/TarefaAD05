@@ -3,16 +3,16 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class Directorio{
     int idDirectorio;
     String nomeDirectorio;
-    
-   
-    
-    
+
     public Directorio(){
     }
     
@@ -33,7 +33,7 @@ public class Directorio{
         try{
             String sqlDirectorio = new String(
                 "CREATE TABLE IF NOT EXISTS Directorio ("
-                        + "idDirectorio integer primary key not null, "
+                        + "idDirectorio serial primary key, "
                         + "nomeDirectorio text"
                         + ");");
 
@@ -45,52 +45,61 @@ public class Directorio{
         }
     }
     
-    public void insertDirectorio(String ruta, Connection conn){
-        File file = new File (ruta);
-        try{
-        String sqlInsertDirectorio = new String (
-                "INSERT INTO Directorio VALUES (?,?)");
-        PreparedStatement psd = conn.prepareStatement(sqlInsertDirectorio);
-        
-        int id = 1;
-        if (file.exists()){
-            String [] lectura = file.list();
-            for (int i = 0; i < lectura.length; i++){
-                if (file.isDirectory()){
-                psd.setInt(1, id);
-                id++;
-                psd.setString(2,lectura[i]);
-                psd.executeUpdate();
-                }   
-            }
-        }
-        psd.close();
-        }catch (SQLException e){
-            e.printStackTrace();
+    public void insertarDirectorio(File carpeta, Connection conn ){
+
+        String raiz = "." + carpeta.getAbsolutePath();
+        System.out.println("Raíz: " + raiz);
+        if (comprobarDirectorio (raiz,conn) != true){
+            try{ 
+                 String sqlInsert = new String(
+                            "INSERT INTO Directorio (nomeDirectorio) VALUES (?);");
+                    PreparedStatement ps = conn.prepareStatement(sqlInsert);
+                    ps.setString(1,raiz);
+                    ps.executeUpdate();
+                    System.out.println("directorio insertado -> " + raiz);
+
+                    ps.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                System.out.println("Erro ó insertar o directorio");
+            }  
         }
     }
     
-    public void insertarDirectorio(File carpetaRaiz, Connection conn ){
-        String raiz = carpetaRaiz.getPath();
-        String ruta = carpetaRaiz.getAbsolutePath();
-        ruta = "." + ruta.substring(raiz.length(),ruta.length());
-        try{
-             String sqlInsert = new String(
-                        "INSERT INTO Directorio VALUES (?,?);");
-                PreparedStatement ps = conn.prepareStatement(sqlInsert);
-                int id = 1;
-                ps.setInt(1,id);
-                id++;
-                ps.setString(2,ruta);
-                ps.executeUpdate();
+    public void recorrerDirectorios(String path,Connection con) {
 
-                System.out.println("directorio insertado -> " + ruta);
+        File fileRaiz = new File(path);
+        String[] directorios = fileRaiz.list();
 
-                ps.close();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            System.out.println("Erro ó insertar o directorio");
+        for (int i = 0; i < directorios.length; i++) {
+            File archivo = new File(fileRaiz + File.separator + directorios[i]);
+
+            //operaciones en cada directorio
+            if (archivo.isDirectory()) {
+
+                insertarDirectorio(archivo,con);
+
+                // llamamos a la recursiva para comprobar subcarpetas
+                recorrerDirectorios(fileRaiz + File.separator + directorios[i],con);
+            }
         }
     }
-            
+    
+    public boolean comprobarDirectorio(String nombre, Connection con) {
+        boolean existe = false;
+        try {
+            String sql = "SELECT * FROM Directorio WHERE nomeDirectorio = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, nombre);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                existe = true;
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return existe;
+    }            
 }

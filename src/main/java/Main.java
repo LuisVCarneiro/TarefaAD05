@@ -21,10 +21,11 @@ public class Main {
         
         File carpetaRaiz = new File (conn.app.directory);
         System.out.println("A carpeta raíz é: " + carpetaRaiz);
-        
+       
         if (!carpetaRaiz.exists()) {
                 carpetaRaiz.mkdir();
             }
         d.insertarDirectorio(carpetaRaiz, con);
+        d.recorrerDirectorios(carpetaRaiz.getPath(), con);
     }
 }

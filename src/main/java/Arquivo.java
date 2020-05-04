@@ -1,9 +1,13 @@
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class Arquivo {
@@ -36,7 +40,7 @@ public class Arquivo {
         try{
             String sqlArquivo = new String(
                 "CREATE TABLE IF NOT EXISTS Arquivo ("
-                        + "idArquivo integer primary key not null,"
+                        + "idArquivo serial primary key,"
                         + " nomeArquivo text, "
                         + "idDirectorio integer, "
                         + "FOREIGN KEY (idDirectorio) REFERENCES Directorio (idDirectorio)"
@@ -50,32 +54,38 @@ public class Arquivo {
             }
     }
     
-    public void insertArquivo(String ruta, Connection conn){
-        File file = new File (ruta);
-        try{
-            String sqlInsertArquivo = new String (
-                "INSERT INTO Arquivo VALUES (?,?,?)");
-        PreparedStatement psa = conn.prepareStatement(sqlInsertArquivo);
-        
-        int id = 1;
-        if (file.exists()){
-            String [] lectura = file.list();
-            for (int i = 0; i < lectura.length; i++){
-               if (file.isDirectory()){
-                   File arquivo = new File(file.getAbsolutePath(),lectura[i]);
-                   for (int j=0; j < lectura.length; j++){
-                       if(file.isFile()){
-                           psa.setInt(1,id);
-                           psa.setString(2, lectura[i]);
-                           //psa.setInt(3,);
-                       }
-                   }
-                }   
+    /*public  void insertArchivo(File archivo, Connection con) {
+
+        try {
+            if (existeArcEnBD(archivo, con) != true) {
+
+                String path = getRuta(archivo);
+
+                // consultamos el id de esa ruta en tabla directorios
+                int idPath = selectIdPorPath(path, con);
+
+                FileInputStream fiStream = new FileInputStream(archivo);
+
+                //Creamos a consulta que inserta a imaxe na base de datos
+                String sqlInsert
+                        = "INSERT INTO archivos (nombre,directorioid,archivo) VALUES (?,?,?);";
+                PreparedStatement ps = con.prepareStatement(sqlInsert);
+
+                ps.setString(1, archivo.getName());
+                ps.setInt(2, idPath);
+                ps.setBinaryStream(3, fiStream, (int) archivo.length());
+
+                //Executamos a consulta
+                ps.executeUpdate();
+
+                System.out.println("archivo insertado -> " + archivo.getName());
+
+                //Cerrramos a consulta e o arquivo aberto
+                ps.close();
+
             }
+        } catch (SQLException | FileNotFoundException ex) {
+            Logger.getLogger(DB.class.getName()).log(Level.SEVERE, null, ex);
         }
-        psa.close();
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
+    }*/
 }
