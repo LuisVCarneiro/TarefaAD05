@@ -5,8 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class Directorio{
@@ -48,7 +46,7 @@ public class Directorio{
     public void insertarDirectorio(File carpeta, Connection conn ){
 
         String raiz = "." + carpeta.getAbsolutePath();
-        System.out.println("Raíz: " + raiz);
+       // System.out.println("Raíz: " + raiz);
         if (comprobarDirectorio (raiz,conn) != true){
             try{ 
                  String sqlInsert = new String(
@@ -73,12 +71,9 @@ public class Directorio{
 
         for (int i = 0; i < directorios.length; i++) {
             File archivo = new File(fileRaiz + File.separator + directorios[i]);
-
             //operaciones en cada directorio
             if (archivo.isDirectory()) {
-
                 insertarDirectorio(archivo,con);
-
                 // llamamos a la recursiva para comprobar subcarpetas
                 recorrerDirectorios(fileRaiz + File.separator + directorios[i],con);
             }

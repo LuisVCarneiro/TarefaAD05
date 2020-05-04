@@ -8,7 +8,7 @@ public class Main {
     
     public static void main (String [] args){
         
-        
+        Operacions operacions = new Operacions();
         Conectar connect = new Conectar();
         Conectar conn = connect.leerJson();
 
@@ -19,13 +19,17 @@ public class Main {
         Arquivo a = new Arquivo();
         a.createTableArquivo(con);
         
-        File carpetaRaiz = new File (conn.app.directory);
-        System.out.println("A carpeta raíz é: " + carpetaRaiz);
+        //Carpeta donde están os directorios e arquivos no documento config.json
+        File carpetaPrincipal = new File (conn.app.directory);
        
-        if (!carpetaRaiz.exists()) {
-                carpetaRaiz.mkdir();
+        if (!carpetaPrincipal.exists()) {
+                carpetaPrincipal.mkdir();
             }
-        d.insertarDirectorio(carpetaRaiz, con);
-        d.recorrerDirectorios(carpetaRaiz.getPath(), con);
+        d.insertarDirectorio(carpetaPrincipal, con);
+        d.recorrerDirectorios(carpetaPrincipal.getPath(), con);
+        
+
+        a.recorrerArquivos(carpetaPrincipal.getPath(), con);
+
     }
 }
