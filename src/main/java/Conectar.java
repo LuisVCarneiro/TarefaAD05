@@ -72,7 +72,7 @@ public class Conectar {
             con.close();
             System.out.println("Desconexión realizada.");
         } catch (SQLException ex) {
-            System.out.println("Non se poido cerrar a conexión");
+            ex.printStackTrace();
         }
 
     }

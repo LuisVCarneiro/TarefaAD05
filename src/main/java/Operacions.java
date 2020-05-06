@@ -1,5 +1,6 @@
 
 import java.io.File;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -68,6 +69,84 @@ public class Operacions {
             ex.printStackTrace();
         }
         return ruta;
+    }
+    
+    public int numeroDirectorios(Connection con) {
+        int numDIrectorios = 0;
+        try {
+            String sql = "SELECT COUNT(*) FROM Directorio";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                numDIrectorios = rs.getInt(1);
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return numDIrectorios;
+    }
+     
+
+    public int numeroArquivos(Connection con) {
+        int numArchivos = 0;
+        try {
+            String sql = "SELECT COUNT(*) FROM Arquivo";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                numArchivos = rs.getInt(1);
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return numArchivos;
+    }
+    
+    //Creo o triguer que se executa ó engadir unha nova mensaxe
+    public void Trigger(Connection con) {
+        
+        String sql = new String(
+                "DROP TRIGGER IF EXISTS notificacion ON Arquivo; "
+                + "CREATE TRIGGER notificacion "
+                + "AFTER INSERT "
+                + "ON Arquivo "
+                + "FOR EACH ROW "
+                + "EXECUTE PROCEDURE mensaje(); ");
+        try {
+            CallableStatement createTrigger = con.prepareCall(sql);
+            createTrigger.execute();
+            createTrigger.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    //Creo a función que notifica que se engadiu un novo arquivo
+    public void Funcion(Connection con) {   
+        try {
+            String sql = new String(
+                    "CREATE OR REPLACE FUNCTION mensaje() "
+                    + "RETURNS trigger AS $$ "
+                    + "BEGIN "
+                    + "PERFORM pg_notify('nuevo_mensaje',NEW.id::text); "
+                    + "RETURN NEW; "
+                    + "END; "
+                    + "$$ LANGUAGE plpgsql; ");
+
+            CallableStatement createFunction = con.prepareCall(sql);
+            createFunction.execute();
+            createFunction.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

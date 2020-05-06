@@ -1,14 +1,11 @@
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class Arquivo {
@@ -21,11 +18,24 @@ public class Arquivo {
     public Arquivo() {
     }
 
-    public Arquivo(int idArquivo, int idDirectorio, String nomeArquivo) {
+    public Arquivo(int idArquivo, String nomeArquivo, int idDirectorio) {
         this.idArquivo = idArquivo;
         this.idDirectorio = idDirectorio;
         this.nomeArquivo = nomeArquivo;
     }
+
+    public int getIdArquivo() {
+        return idArquivo;
+    }
+
+    public int getIdDirectorio() {
+        return idDirectorio;
+    }
+
+    public String getNomeArquivo() {
+        return nomeArquivo;
+    }
+    
     
     //Crea a táboa Arquivo se non existe
     public void createTableArquivo(Connection con){
@@ -50,13 +60,11 @@ public class Arquivo {
     public  void insertArquivo(File arquivo, Connection con) {
 
         try {
-           // if (comprobarArquivo(arquivo, con) != true) {
+            if (comprobarArquivo(arquivo, con) != true) {
                 
                 String path = operacion.getRuta(arquivo);
-                System.out.println(path);
                 
                 int idPath = operacion.getIdByNome(path, con);
-                System.out.println(idPath);
 
                 String sqlInsert
                         = "INSERT INTO Arquivo (nomeArquivo, idDirectorio) VALUES (?,?);";
@@ -69,37 +77,34 @@ public class Arquivo {
                 System.out.println("Arquivo insertado: " + arquivo.getName());
 
                 ps.close();
-
-           // }
+           }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
     
     //Comproba que na táboa non existe un arquivo igual para insertar o arquivo
-   /* public boolean comprobarArquivo(File ruta, Connection con){
+    public boolean comprobarArquivo(File arquivo, Connection con){
         boolean existe = false;
-        int id = operacion.selectIdDirectorio(operacion.getRuta(ruta), con);
-       try {
-            String sql = "SELECT * FROM Arquivos WHERE nomeArquivo = ? AND idDirectorio = ?";
-            PreparedStatement ps = con.prepareStatement(sql);
+           try {
+                String sql = "SELECT * FROM Arquivo WHERE nomeArquivo = ?";
+                PreparedStatement ps = con.prepareStatement(sql);
 
-            ps.setString(1, ruta.getName());
-            ps.setInt(2, id);
-            ResultSet rs = ps.executeQuery();
+                ps.setString(1, arquivo.getName());
+                ResultSet rs = ps.executeQuery();
 
-            while (rs.next()) {
-                existe = true;
+                while (rs.next()) {
+                    existe = true;
+                }
+
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
             }
-
-            rs.close();
-            ps.close();
-
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return existe;
-    }*/
+            return existe;
+    }
     
     //Recorre o directorio raíz en busca de directorios e arquivos
     public void recorrerArquivos(String ruta, Connection con){
@@ -119,6 +124,53 @@ public class Arquivo {
                 }
             }
         }
+    }
+    
+    public void restaurarArquivo(Connection con){
+        
+        Arquivo [] arquivos = seleccionarArquivos(con);     
+        
+        for (int i = 0; i < arquivos.length; i++) {
+            String ruta = arquivos[i].getNomeArquivo();
+            if (!new File(ruta).exists()) {
+                File file = new File(ruta);
+                try{
+                    file.createNewFile();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                        }
+            }   
+        }
+    }
+    
+    //Rescata os arquivos que hai na base de datos e os introduce nun array de tipo Arquivo
+    public Arquivo[] seleccionarArquivos(Connection con) {
+
+        int numArquivos = operacion.numeroArquivos(con);
+
+        Arquivo[] array = new Arquivo[numArquivos];
+
+        try {
+            String sql = "SELECT * FROM Arquivo";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            int cont = 0;
+            while (rs.next()) {
+                int idArquivo = rs.getInt("idArquivo");
+                String nomeArquivo = rs.getString("nomeArquivo");
+                int idDirect = rs.getInt("idDirectorio");
+                array[cont] = new Arquivo (idArquivo, nomeArquivo, idDirect);
+                cont += 1;
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return array;
     }
 
 }

@@ -10,6 +10,7 @@ import java.sql.SQLException;
 public class Directorio{
     int idDirectorio;
     String nomeDirectorio;
+    Operacions operacion = new Operacions();
 
     public Directorio(){
     }
@@ -27,6 +28,8 @@ public class Directorio{
         return nomeDirectorio;
     }
     
+    
+    //Creo a táboa directorio na base de datos, se non está xa creada
     public void createTableDirectorio(Connection con){
         try{
             String sqlDirectorio = new String(
@@ -43,10 +46,10 @@ public class Directorio{
         }
     }
     
+    //Inserto un directorio na base de datos, se non existe xa de antes
     public void insertarDirectorio(File carpeta, Connection conn ){
 
         String raiz = "." + carpeta.getAbsolutePath();
-       // System.out.println("Raíz: " + raiz);
         if (comprobarDirectorio (raiz,conn) != true){
             try{ 
                  String sqlInsert = new String(
@@ -64,6 +67,7 @@ public class Directorio{
         }
     }
     
+    //Recorro o directorio raíz para ler os directorios que contén e posteriormente pasalos á base de datos
     public void recorrerDirectorios(String path,Connection con) {
 
         File fileRaiz = new File(path);
@@ -71,21 +75,20 @@ public class Directorio{
 
         for (int i = 0; i < directorios.length; i++) {
             File archivo = new File(fileRaiz + File.separator + directorios[i]);
-            //operaciones en cada directorio
             if (archivo.isDirectory()) {
                 insertarDirectorio(archivo,con);
-                // llamamos a la recursiva para comprobar subcarpetas
                 recorrerDirectorios(fileRaiz + File.separator + directorios[i],con);
             }
         }
     }
     
-    public boolean comprobarDirectorio(String nombre, Connection con) {
+    //Método que coproba que o directorio lido non exista xa na base de datos
+    public boolean comprobarDirectorio(String nome, Connection con) {
         boolean existe = false;
         try {
             String sql = "SELECT * FROM Directorio WHERE nomeDirectorio = ?";
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, nombre);
+            ps.setString(1, nome);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 existe = true;
@@ -96,5 +99,47 @@ public class Directorio{
             ex.printStackTrace();
         }
         return existe;
-    }            
+    }
+    
+    //Lee o array de directorios e os que non existan, os crea
+    public void restaurarDirectorios(Connection con) {
+
+        Directorio[] array = selecionarDirectorios(con);
+        
+        for (int i = 0; i < array.length; i++) {
+            String ruta = array[i].getNomeDirectorio();
+            if (!new File(ruta).exists()) {
+                File file = new File(ruta);
+                file.mkdirs();
+            }
+        }
+    } 
+    
+    //Rescata os directorios que hai na base de datos e os introduce nun array de tipo Directorio
+    public Directorio[] selecionarDirectorios(Connection con) {
+        int numDirectorios = operacion.numeroDirectorios(con);
+        Directorio[] array = new Directorio[numDirectorios];
+
+        try {
+            String sql = "SELECT * FROM Directorio";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            int cont = 0;
+            while (rs.next()) {
+                int id = rs.getInt("idDirectorio");
+                String nome = rs.getString("nomeDirectorio");
+                array[cont] = new Directorio(id, nome);
+                cont += 1;
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return array;
+    }
 }
+

@@ -25,11 +25,18 @@ public class Main {
         if (!carpetaPrincipal.exists()) {
                 carpetaPrincipal.mkdir();
             }
+        
+        //Inserto directorio raíz e posteriormente recórroo para insertar na base de datos os directorios e arquivos que conteña 
         d.insertarDirectorio(carpetaPrincipal, con);
         d.recorrerDirectorios(carpetaPrincipal.getPath(), con);
-        
-
         a.recorrerArquivos(carpetaPrincipal.getPath(), con);
-
+        
+        d.restaurarDirectorios(con);
+        a.restaurarArquivo(con);
+        
+        operacions.Funcion(con);
+        operacions.Trigger(con);
+        
+        conn.desconectarDB(con);
     }
 }
